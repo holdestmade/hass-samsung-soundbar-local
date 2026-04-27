@@ -6,7 +6,6 @@ import logging
 from datetime import timedelta
 from typing import Any
 
-from aiohttp import ClientSession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
@@ -31,13 +30,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a Samsung Soundbar from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    session: ClientSession = aiohttp_client.async_create_clientsession(
-        hass, verify_ssl=entry.data.get(CONF_VERIFY_SSL, False)
-    )
+    verify_ssl = entry.data.get(CONF_VERIFY_SSL, False)
+    session = aiohttp_client.async_get_clientsession(hass, verify_ssl=verify_ssl)
     soundbar = AsyncSoundbar(
         host=entry.data[CONF_HOST],
         session=session,
-        verify_ssl=entry.data.get(CONF_VERIFY_SSL, False),
+        verify_ssl=verify_ssl,
     )
 
     async def _async_update_data() -> dict[str, Any]:
@@ -49,6 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
+        config_entry=entry,
         name=f"soundbar_{entry.data[CONF_HOST]}",
         update_method=_async_update_data,
         update_interval=timedelta(seconds=DEFAULT_POLL_INTERVAL),
