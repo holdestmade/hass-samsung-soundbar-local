@@ -9,11 +9,11 @@ from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
 )
-from homeassistant.const import STATE_OFF, STATE_ON
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_HOST, STATE_OFF, STATE_ON
 from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.config_entries import ConfigEntry
 
 from .const import DOMAIN
 from .soundbar import AsyncSoundbar
@@ -68,20 +68,21 @@ class SoundbarLocalEntity(CoordinatorEntity, MediaPlayerEntity):
     _attr_source_list = _SOURCES
     _attr_sound_mode_list = _SOUND_MODES
     _attr_device_class = MediaPlayerDeviceClass.SPEAKER
+    _attr_has_entity_name = True
+    _attr_name = None
 
     def __init__(self, coordinator, soundbar: AsyncSoundbar, entry: ConfigEntry) -> None:
         super().__init__(coordinator)
         self._soundbar = soundbar
         self._entry = entry
 
-        host = entry.data["host"]
-        self._attr_unique_id = host
-        self._attr_name = f"Soundbar {host}"
+        host = entry.data[CONF_HOST]
+        self._attr_unique_id = f"{DOMAIN}_{host}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, host)},
             manufacturer="Samsung",
             model="Soundbar",
-            name=self._attr_name,
+            name=f"Soundbar {host}",
         )
 
     # ---------- control ----------
@@ -121,23 +122,33 @@ class SoundbarLocalEntity(CoordinatorEntity, MediaPlayerEntity):
     # ---------- properties ----------
     @property
     def state(self):
+        if self.coordinator.data is None:
+            return None
         power = self.coordinator.data.get("power")
         return STATE_ON if power == "powerOn" else STATE_OFF
 
     @property
     def volume_level(self):
+        if self.coordinator.data is None:
+            return None
         return self.coordinator.data.get("volume", 0) / 100
 
     @property
     def is_volume_muted(self):
+        if self.coordinator.data is None:
+            return None
         return self.coordinator.data.get("mute", False)
 
     @property
     def source(self):
+        if self.coordinator.data is None:
+            return None
         return self.coordinator.data.get("input")
 
     @property
     def sound_mode(self):
+        if self.coordinator.data is None:
+            return None
         return self.coordinator.data.get("sound_mode")
 
     # ---------- coordinator update ----------

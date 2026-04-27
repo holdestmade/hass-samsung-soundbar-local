@@ -16,7 +16,7 @@ No cloud, no SmartThings integration in Home Assistant – everything stays on y
 |----------|---------|
 | Power control | `turn_on`, `turn_off` |
 | Audio | volume **set / step / mute** |
-| Subwoofer | woofer ± (not presented to Home Assistant yet) |
+| Subwoofer | woofer ± exposed as Home Assistant `button` entities |
 | Inputs | HDMI1, E-ARC, ARC, Digital, Bluetooth, Wi-Fi |
 | Sound modes | Standard, Surround, Game, Movie, Music, Clear Voice, DTS Virtual X, Adaptive |
 
@@ -35,11 +35,15 @@ The entity is exposed as `media_player.soundbar_<ipaddr>` and works with dashboa
 
 ## Requirements
 
-* Home Assistant 2023.12 or newer  
-* Python 3.11 (bundled with HA OS / Container)  
-* Your soundbar **added to the Samsung SmartThings app, connected to Wi-Fi** and  
-  **“IP control” enabled** in the device settings.  
+* Home Assistant 2024.3 or newer
+* Python 3.11 (bundled with HA OS / Container)
+* Your soundbar **added to the Samsung SmartThings app, connected to Wi-Fi** and
+  **“IP control” enabled** in the device settings.
   This setting allows the bar to produce an *Access Token* that the integration uses.
+
+> The soundbar exposes its API over HTTPS using a self-signed certificate, so
+> TLS verification is disabled by default. You can enable verification in the
+> config flow if you have configured a trusted CA on your network.
 
 ---
 
